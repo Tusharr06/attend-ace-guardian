@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignupForm = () => {
   const [name, setName] = useState("");
@@ -27,26 +28,62 @@ const SignupForm = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // This is a placeholder for Supabase authentication
-    // In a real implementation, this would connect to Supabase
     try {
-      // Mock successful signup for demo purposes
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("userEmail", email);
-      
-      setIsLoading(false);
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully.",
+      // Register with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
       });
       
-      // Redirect to login
-      navigate("/login");
-    } catch (error) {
+      if (error) {
+        throw error;
+      }
+      
+      if (data.user) {
+        // Create user profile in the users table
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            email,
+            full_name: name,
+            role
+          });
+        
+        if (profileError) {
+          throw profileError;
+        }
+        
+        // If student, create additional student details
+        if (role === "student") {
+          const { error: studentError } = await supabase
+            .from('student_details')
+            .insert({
+              user_id: data.user.id,
+              usn,
+              semester: parseInt(semester),
+              section
+            });
+          
+          if (studentError) {
+            throw studentError;
+          }
+        }
+        
+        setIsLoading(false);
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully. Please login.",
+        });
+        
+        // Redirect to login
+        navigate("/login");
+      }
+    } catch (error: any) {
       setIsLoading(false);
       toast({
         title: "Signup failed",
-        description: "There was an error creating your account. Please try again.",
+        description: error.message || "There was an error creating your account. Please try again.",
         variant: "destructive",
       });
     }

@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -20,34 +20,54 @@ const LoginForm = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // This is a placeholder for Supabase authentication
-    // In a real implementation, this would connect to Supabase
     try {
-      // Mock successful login for demo purposes
-      const mockRole: UserRole = email.includes("faculty") ? "faculty" : "student";
-      
-      localStorage.setItem("userRole", mockRole);
-      localStorage.setItem("userEmail", email);
-      
-      setIsLoading(false);
-      toast({
-        title: "Login successful",
-        description: `Welcome back!`,
+      // Use Supabase auth to sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
       
-      // Redirect based on role
-      if (mockRole === "faculty") {
-        navigate("/faculty-dashboard");
-      } else {
-        navigate("/student-dashboard");
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      setIsLoading(false);
+      
+      if (data.user) {
+        // Fetch the user's role from the database
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (userError) {
+          throw userError;
+        }
+        
+        // Store role in localStorage
+        const userRole = userData?.role as UserRole;
+        localStorage.setItem("userRole", userRole);
+        localStorage.setItem("userEmail", email);
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome back!`,
+        });
+        
+        // Redirect based on role
+        if (userRole === "faculty") {
+          navigate("/faculty-dashboard");
+        } else {
+          navigate("/student-dashboard");
+        }
+      }
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Invalid email or password",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
