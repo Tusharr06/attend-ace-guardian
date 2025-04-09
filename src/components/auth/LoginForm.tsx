@@ -71,6 +71,19 @@ const LoginForm = () => {
     }
   };
 
+  const handleDemoFacultyLogin = () => {
+    // Set demo faculty credentials in localStorage
+    localStorage.setItem("userRole", "faculty");
+    localStorage.setItem("userEmail", "demo.faculty@example.com");
+    
+    toast({
+      title: "Demo Faculty Login",
+      description: "You are now logged in as a demo faculty member",
+    });
+    
+    navigate("/faculty-dashboard");
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
@@ -106,6 +119,14 @@ const LoginForm = () => {
         <CardFooter className="flex flex-col space-y-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleDemoFacultyLogin}
+          >
+            Demo Faculty Login
           </Button>
           <div className="text-sm text-center text-muted-foreground">
             Don't have an account?{" "}
