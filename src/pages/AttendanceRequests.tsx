@@ -9,43 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarRange, Eye, FileCheck, FileClock, FileX } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
-
-// Mock data for request history
-const mockRequestHistory = [
-  {
-    id: "1",
-    subject: "Web Development",
-    date: "2025-04-05",
-    reason: "Medical emergency",
-    proofUrl: "https://example.com/proof1.pdf",
-    status: "approved",
-    submittedOn: "2025-04-06T10:30:00Z",
-  },
-  {
-    id: "2",
-    subject: "Data Structures",
-    date: "2025-04-10",
-    reason: "Family function",
-    proofUrl: "https://example.com/proof2.pdf",
-    status: "pending",
-    submittedOn: "2025-04-11T09:15:00Z",
-  },
-  {
-    id: "3",
-    subject: "Database Management",
-    date: "2025-04-15",
-    reason: "Technical issues during online class",
-    proofUrl: "https://example.com/proof3.pdf",
-    status: "rejected",
-    submittedOn: "2025-04-16T14:45:00Z",
-    feedback: "Insufficient proof provided for technical issues.",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { AttendanceRequest } from "@/types";
 
 const AttendanceRequests = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<AttendanceRequest | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   useEffect(() => {
@@ -59,6 +30,40 @@ const AttendanceRequests = () => {
     setLoading(false);
   }, [navigate]);
 
+  // Fetch student's attendance requests
+  const { data: requestHistory = [] } = useQuery({
+    queryKey: ['student-attendance-requests'],
+    queryFn: async () => {
+      // TODO: Replace with actual user ID from auth
+      const userId = "1"; // This should be replaced with the authenticated user's ID
+      
+      const { data, error } = await supabase
+        .from('attendance_requests')
+        .select('*')
+        .eq('student_id', userId);
+      
+      if (error) {
+        console.error("Error fetching attendance requests:", error);
+        return [];
+      }
+      
+      // Convert from Supabase format to our application format
+      return (data || []).map(item => ({
+        id: item.id,
+        studentId: item.student_id || '',
+        subjectId: item.subject_id || '',
+        facultyId: item.faculty_id || '',
+        date: item.date || '',
+        reason: item.reason,
+        proofUrl: item.proof_url,
+        status: item.status as "pending" | "approved" | "rejected",
+        createdAt: item.created_at || new Date().toISOString(),
+        feedback: item.feedback,
+      }));
+    },
+    enabled: !loading, // Only run query when component is done loading
+  });
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -71,7 +76,7 @@ const AttendanceRequests = () => {
     return format(new Date(dateTimeString), "MMM d, yyyy 'at' h:mm a");
   };
 
-  const handleViewRequest = (request: any) => {
+  const handleViewRequest = (request: AttendanceRequest) => {
     setSelectedRequest(request);
     setIsDialogOpen(true);
   };
@@ -85,6 +90,18 @@ const AttendanceRequests = () => {
       default:
         return <FileClock className="h-5 w-5 text-amber-500" />;
     }
+  };
+
+  // Mock data for subjects - this should be replaced with a query to get subjects
+  const subjects = [
+    { id: "1", name: "Web Development" },
+    { id: "2", name: "Database Management" },
+    { id: "3", name: "Data Structures" },
+  ];
+
+  const getSubjectName = (subjectId: string) => {
+    const subject = subjects.find(s => s.id === subjectId);
+    return subject ? subject.name : "Unknown Subject";
   };
 
   return (
@@ -111,7 +128,7 @@ const AttendanceRequests = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockRequestHistory.length > 0 ? (
+                {requestHistory.length > 0 ? (
                   <div className="border rounded-md">
                     <div className="grid grid-cols-12 p-3 border-b bg-muted/50 font-medium">
                       <div className="col-span-3">Subject</div>
@@ -122,18 +139,18 @@ const AttendanceRequests = () => {
                     </div>
                     
                     <div className="max-h-[400px] overflow-y-auto">
-                      {mockRequestHistory.map((request) => (
+                      {requestHistory.map((request) => (
                         <div
                           key={request.id}
                           className="grid grid-cols-12 p-3 border-b last:border-0 items-center"
                         >
-                          <div className="col-span-3">{request.subject}</div>
+                          <div className="col-span-3">{getSubjectName(request.subjectId)}</div>
                           <div className="col-span-2 flex items-center">
                             <CalendarRange className="h-4 w-4 mr-1 text-muted-foreground hidden sm:inline" />
                             {formatDate(request.date)}
                           </div>
                           <div className="col-span-3 text-muted-foreground hidden md:block">
-                            {formatDateTime(request.submittedOn)}
+                            {formatDateTime(request.createdAt)}
                           </div>
                           <div className="col-span-3 md:col-span-2">
                             <Badge
@@ -190,7 +207,7 @@ const AttendanceRequests = () => {
                 <span>Request Details</span>
               </DialogTitle>
               <DialogDescription>
-                {formatDate(selectedRequest.date)} • {selectedRequest.subject}
+                {formatDate(selectedRequest.date)} • {getSubjectName(selectedRequest.subjectId)}
               </DialogDescription>
             </DialogHeader>
             
@@ -238,7 +255,7 @@ const AttendanceRequests = () => {
                   Submitted
                 </p>
                 <p className="text-sm">
-                  {formatDateTime(selectedRequest.submittedOn)}
+                  {formatDateTime(selectedRequest.createdAt)}
                 </p>
               </div>
               

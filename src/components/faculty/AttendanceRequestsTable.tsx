@@ -1,59 +1,14 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Eye, CheckCircle, XCircle } from "lucide-react";
 import { AttendanceRequest } from "@/types";
-
-// Mock data for attendance requests
-const mockRequests: AttendanceRequest[] = [
-  {
-    id: "1",
-    studentId: "1",
-    subjectId: "1",
-    facultyId: "1",
-    date: "2025-04-01",
-    reason: "Medical emergency",
-    proofUrl: "https://example.com/proof1.pdf",
-    status: "pending",
-    createdAt: "2025-04-02T10:30:00Z",
-  },
-  {
-    id: "2",
-    studentId: "3",
-    subjectId: "1",
-    facultyId: "1",
-    date: "2025-04-05",
-    reason: "Family function",
-    proofUrl: "https://example.com/proof2.pdf",
-    status: "approved",
-    createdAt: "2025-04-06T09:15:00Z",
-  },
-  {
-    id: "3",
-    studentId: "6",
-    subjectId: "2",
-    facultyId: "2",
-    date: "2025-04-08",
-    reason: "Technical issues during online class",
-    proofUrl: "https://example.com/proof3.pdf",
-    status: "rejected",
-    createdAt: "2025-04-09T14:45:00Z",
-  },
-  {
-    id: "4",
-    studentId: "9",
-    subjectId: "3",
-    facultyId: "2",
-    date: "2025-04-12",
-    reason: "Medical appointment",
-    proofUrl: "https://example.com/proof4.pdf",
-    status: "pending",
-    createdAt: "2025-04-12T16:20:00Z",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Mock data for students
 const mockStudents = [
@@ -79,11 +34,62 @@ const mockFaculties = [
 ];
 
 const AttendanceRequestsTable = () => {
-  const [requests, setRequests] = useState<AttendanceRequest[]>(mockRequests);
   const [selectedRequest, setSelectedRequest] = useState<AttendanceRequest | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch attendance requests
+  const { data: requests = [], isLoading } = useQuery({
+    queryKey: ['attendance-requests'],
+    queryFn: async () => {
+      // This is a placeholder for the actual Supabase query
+      const { data, error } = await supabase
+        .from('attendance_requests')
+        .select('*');
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Convert from Supabase format to our application format
+      return (data || []).map(item => ({
+        id: item.id,
+        studentId: item.student_id || '',
+        subjectId: item.subject_id || '',
+        facultyId: item.faculty_id || '',
+        date: item.date || '',
+        reason: item.reason,
+        proofUrl: item.proof_url,
+        status: item.status as "pending" | "approved" | "rejected",
+        createdAt: item.created_at || new Date().toISOString(),
+        feedback: item.feedback,
+      }));
+    },
+  });
+
+  // Update request status mutation
+  const updateRequestStatus = useMutation({
+    mutationFn: async ({ requestId, status, feedback }: { requestId: string, status: "approved" | "rejected", feedback?: string }) => {
+      const { error } = await supabase
+        .from('attendance_requests')
+        .update({ 
+          status, 
+          feedback 
+        })
+        .eq('id', requestId);
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      return { requestId, status };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendance-requests'] });
+    },
+  });
 
   const getStudentName = (studentId: string) => {
     const student = mockStudents.find((s) => s.id === studentId);
@@ -112,15 +118,10 @@ const AttendanceRequestsTable = () => {
 
   const handleApproveRequest = async (requestId: string) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setRequests(
-        requests.map((request) =>
-          request.id === requestId
-            ? { ...request, status: "approved" }
-            : request
-        )
-      );
+      await updateRequestStatus.mutateAsync({
+        requestId,
+        status: "approved"
+      });
       
       setIsDialogOpen(false);
       
@@ -140,15 +141,10 @@ const AttendanceRequestsTable = () => {
 
   const handleRejectRequest = async (requestId: string) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setRequests(
-        requests.map((request) =>
-          request.id === requestId
-            ? { ...request, status: "rejected" }
-            : request
-        )
-      );
+      await updateRequestStatus.mutateAsync({
+        requestId,
+        status: "rejected"
+      });
       
       setIsDialogOpen(false);
       
@@ -173,6 +169,10 @@ const AttendanceRequestsTable = () => {
       day: "numeric",
     });
   };
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading attendance requests...</div>;
+  }
 
   return (
     <Card className="w-full">
