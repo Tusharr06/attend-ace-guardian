@@ -16,13 +16,15 @@ import ApprovalRequests from "./pages/ApprovalRequests";
 import ManageAttendance from "./pages/ManageAttendance";
 import FacultyDirectory from "./pages/FacultyDirectory";
 import NotFound from "./pages/NotFound";
-import React from "react"; // Add explicit React import
+import { useState } from "react";
 
-// Create a new query client instance
-const queryClient = new QueryClient();
+// Create a new query client instance inside the component to ensure it's created
+// within the React lifecycle
+const App = () => {
+  // Create the query client within the component
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => (
-  <React.StrictMode>
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -45,7 +47,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
-  </React.StrictMode>
-);
+  );
+};
 
 export default App;

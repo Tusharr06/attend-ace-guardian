@@ -25,3 +25,5 @@ export interface AttendanceRequest {
   createdAt: string;
   feedback?: string;
 }
+
+export type UserRole = "student" | "faculty";
