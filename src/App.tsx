@@ -14,6 +14,7 @@ import AttendanceRecords from "./pages/AttendanceRecords";
 import AttendanceRequests from "./pages/AttendanceRequests";
 import ApprovalRequests from "./pages/ApprovalRequests";
 import ManageAttendance from "./pages/ManageAttendance";
+import FacultyDirectory from "./pages/FacultyDirectory";
 import NotFound from "./pages/NotFound";
 import React from "react"; // Add explicit React import
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/attendance-requests" element={<AttendanceRequests />} />
             <Route path="/approval-requests" element={<ApprovalRequests />} />
             <Route path="/manage-attendance" element={<ManageAttendance />} />
+            <Route path="/faculty-directory" element={<FacultyDirectory />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

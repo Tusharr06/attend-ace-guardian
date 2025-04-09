@@ -1,13 +1,13 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import AttendanceCard from "@/components/student/AttendanceCard";
 import AttendanceCalendar from "@/components/student/AttendanceCalendar";
 import AbsenceRequestForm from "@/components/student/AbsenceRequestForm";
 import { AttendanceStats } from "@/types";
-import { ArrowUpRight, CalendarCheck, CalendarDays, CheckSquare, Clock, FileCheck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarCheck, CalendarDays, CheckSquare, Clock, FileCheck, Users } from "lucide-react";
 
 // Mock subjects data
 const mockSubjects = [
@@ -168,6 +168,7 @@ const StudentDashboard = () => {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="request">Submit Request</TabsTrigger>
+          <TabsTrigger value="faculty">Faculty</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -247,6 +248,30 @@ const StudentDashboard = () => {
         </TabsContent>
         <TabsContent value="request">
           <AbsenceRequestForm />
+        </TabsContent>
+        <TabsContent value="faculty">
+          <Card>
+            <CardHeader>
+              <CardTitle>Faculty Directory</CardTitle>
+              <CardDescription>
+                View information about faculty members and their teaching subjects
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
+              <div className="mb-4 p-6 rounded-full bg-primary/10">
+                <Users className="h-12 w-12 text-primary" />
+              </div>
+              <p className="text-center mb-6 max-w-md">
+                Access the faculty directory to see all teaching staff, their contact information, and subjects they teach.
+              </p>
+              <Button asChild>
+                <Link to="/faculty-directory" className="flex items-center">
+                  View Faculty Directory 
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

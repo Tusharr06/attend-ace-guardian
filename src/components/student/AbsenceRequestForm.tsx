@@ -15,14 +15,23 @@ import { CalendarIcon, Upload } from "lucide-react";
 
 // Mock subjects data - in a real app this would come from a database
 const mockSubjects = [
-  { id: "1", name: "Web Development" },
-  { id: "2", name: "Database Management" },
-  { id: "3", name: "Data Structures" },
-  { id: "4", name: "Computer Networks" },
+  { id: "1", name: "Web Development", facultyId: "1" },
+  { id: "2", name: "Database Management", facultyId: "1" },
+  { id: "3", name: "Data Structures", facultyId: "2" },
+  { id: "4", name: "Computer Networks", facultyId: "2" },
+];
+
+// Mock faculty data
+const mockFaculties = [
+  { id: "1", name: "Dr. Robert Smith" },
+  { id: "2", name: "Prof. Jennifer Lee" },
+  { id: "3", name: "Dr. Michael Johnson" },
+  { id: "4", name: "Prof. Elizabeth Taylor" },
 ];
 
 const AbsenceRequestForm = () => {
   const [subject, setSubject] = useState("");
+  const [faculty, setFaculty] = useState("");
   const [date, setDate] = useState<Date>();
   const [reason, setReason] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -36,10 +45,19 @@ const AbsenceRequestForm = () => {
     }
   };
 
+  // Update faculty when subject changes
+  const handleSubjectChange = (subjectId: string) => {
+    setSubject(subjectId);
+    const selectedSubject = mockSubjects.find(s => s.id === subjectId);
+    if (selectedSubject) {
+      setFaculty(selectedSubject.facultyId);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!subject || !date || !reason || !file) {
+    if (!subject || !date || !reason || !file || !faculty) {
       toast({
         title: "Missing information",
         description: "Please fill in all fields and upload a proof document.",
@@ -57,14 +75,19 @@ const AbsenceRequestForm = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // Get faculty name for the toast message
+      const facultyName = mockFaculties.find(f => f.id === faculty)?.name || "Unknown faculty";
+      const subjectName = mockSubjects.find(s => s.id === subject)?.name || "Unknown subject";
+      
       setIsLoading(false);
       toast({
         title: "Request submitted",
-        description: "Your absence request has been submitted successfully.",
+        description: `Your absence request for ${subjectName} has been submitted to ${facultyName}.`,
       });
       
       // Reset form
       setSubject("");
+      setFaculty("");
       setDate(undefined);
       setReason("");
       setFile(null);
@@ -79,6 +102,12 @@ const AbsenceRequestForm = () => {
     }
   };
 
+  // Get faculty name for the selected faculty
+  const getFacultyName = () => {
+    const selectedFaculty = mockFaculties.find(f => f.id === faculty);
+    return selectedFaculty ? selectedFaculty.name : "Select a subject first";
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -91,7 +120,7 @@ const AbsenceRequestForm = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="subject">Subject</Label>
-            <Select value={subject} onValueChange={setSubject}>
+            <Select value={subject} onValueChange={handleSubjectChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select subject" />
               </SelectTrigger>
@@ -103,6 +132,13 @@ const AbsenceRequestForm = () => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="faculty">Faculty</Label>
+            <div className="p-3 border rounded-md bg-muted/40">
+              {getFacultyName()}
+            </div>
           </div>
           
           <div className="space-y-2">

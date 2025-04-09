@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +13,7 @@ const mockRequests: AttendanceRequest[] = [
     id: "1",
     studentId: "1",
     subjectId: "1",
+    facultyId: "1",
     date: "2025-04-01",
     reason: "Medical emergency",
     proofUrl: "https://example.com/proof1.pdf",
@@ -24,6 +24,7 @@ const mockRequests: AttendanceRequest[] = [
     id: "2",
     studentId: "3",
     subjectId: "1",
+    facultyId: "1",
     date: "2025-04-05",
     reason: "Family function",
     proofUrl: "https://example.com/proof2.pdf",
@@ -34,6 +35,7 @@ const mockRequests: AttendanceRequest[] = [
     id: "3",
     studentId: "6",
     subjectId: "2",
+    facultyId: "2",
     date: "2025-04-08",
     reason: "Technical issues during online class",
     proofUrl: "https://example.com/proof3.pdf",
@@ -44,6 +46,7 @@ const mockRequests: AttendanceRequest[] = [
     id: "4",
     studentId: "9",
     subjectId: "3",
+    facultyId: "2",
     date: "2025-04-12",
     reason: "Medical appointment",
     proofUrl: "https://example.com/proof4.pdf",
@@ -65,6 +68,14 @@ const mockSubjects = [
   { id: "1", name: "Web Development" },
   { id: "2", name: "Database Management" },
   { id: "3", name: "Data Structures" },
+];
+
+// Mock data for faculties
+const mockFaculties = [
+  { id: "1", name: "Dr. Robert Smith" },
+  { id: "2", name: "Prof. Jennifer Lee" },
+  { id: "3", name: "Dr. Michael Johnson" },
+  { id: "4", name: "Prof. Elizabeth Taylor" },
 ];
 
 const AttendanceRequestsTable = () => {
@@ -89,16 +100,18 @@ const AttendanceRequestsTable = () => {
     return subject ? subject.name : "Unknown Subject";
   };
 
+  const getFacultyName = (facultyId: string) => {
+    const faculty = mockFaculties.find((f) => f.id === facultyId);
+    return faculty ? faculty.name : "Unknown Faculty";
+  };
+
   const handleViewRequest = (request: AttendanceRequest) => {
     setSelectedRequest(request);
     setIsDialogOpen(true);
   };
 
   const handleApproveRequest = async (requestId: string) => {
-    // This is a placeholder for Supabase integration
-    // In a real implementation, this would update the database
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setRequests(
@@ -126,10 +139,7 @@ const AttendanceRequestsTable = () => {
   };
 
   const handleRejectRequest = async (requestId: string) => {
-    // This is a placeholder for Supabase integration
-    // In a real implementation, this would update the database
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setRequests(
@@ -175,19 +185,19 @@ const AttendanceRequestsTable = () => {
       <CardContent>
         <div className="border rounded-md">
           <div className="grid grid-cols-12 p-3 border-b bg-muted/50 font-medium">
-            <div className="col-span-3 md:col-span-2">Date</div>
+            <div className="col-span-2 md:col-span-2">Date</div>
             <div className="col-span-3 md:col-span-2">Student</div>
             <div className="hidden md:block md:col-span-2">USN</div>
             <div className="col-span-3 md:col-span-2">Subject</div>
             <div className="col-span-2 md:col-span-2">Status</div>
-            <div className="col-span-1 md:col-span-2 text-right">Actions</div>
+            <div className="col-span-2 md:col-span-2 text-right">Actions</div>
           </div>
           
           <div className="max-h-[400px] overflow-y-auto">
             {requests.length > 0 ? (
               requests.map((request) => (
                 <div key={request.id} className="grid grid-cols-12 p-3 border-b last:border-0 items-center">
-                  <div className="col-span-3 md:col-span-2">
+                  <div className="col-span-2 md:col-span-2">
                     {formatDate(request.date)}
                   </div>
                   <div className="col-span-3 md:col-span-2">
@@ -217,7 +227,7 @@ const AttendanceRequestsTable = () => {
                         : "Rejected"}
                     </Badge>
                   </div>
-                  <div className="col-span-1 md:col-span-2 text-right">
+                  <div className="col-span-2 md:col-span-2 text-right">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -263,9 +273,15 @@ const AttendanceRequestsTable = () => {
                 </div>
               </div>
               
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Subject</p>
-                <p className="text-sm">{getSubjectName(selectedRequest.subjectId)}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Subject</p>
+                  <p className="text-sm">{getSubjectName(selectedRequest.subjectId)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Faculty</p>
+                  <p className="text-sm">{getFacultyName(selectedRequest.facultyId)}</p>
+                </div>
               </div>
               
               <div className="space-y-1">
