@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -217,7 +216,8 @@ const AttendanceRequestsTable = () => {
                           ? "bg-amber-100 text-amber-800 hover:bg-amber-100"
                           : request.status === "approved"
                           ? "bg-green-100 text-green-800 hover:bg-green-100"
-                          : "bg-red-100 text-red-800 hover:bg-red-100"
+                          : request.status === "rejected"
+                          ? "bg-red-100 text-red-800 hover:bg-red-100"
                       }`}
                     >
                       {request.status === "pending"
@@ -305,7 +305,8 @@ const AttendanceRequestsTable = () => {
                       ? "bg-amber-100 text-amber-800"
                       : selectedRequest.status === "approved"
                       ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
+                      : selectedRequest.status === "rejected"
+                      ? "bg-red-100 text-red-800"
                   }`}
                 >
                   {selectedRequest.status === "pending"

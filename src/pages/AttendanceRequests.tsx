@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -230,7 +229,7 @@ const AttendanceRequests = () => {
                       ? "bg-amber-100 text-amber-800"
                       : selectedRequest.status === "approved"
                       ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
+                      : selectedRequest.status === "rejected"
                   }`}
                 >
                   {selectedRequest.status === "pending"

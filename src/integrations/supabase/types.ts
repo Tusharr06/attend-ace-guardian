@@ -55,26 +55,41 @@ export type Database = {
         Row: {
           attendance_id: string | null
           created_at: string | null
+          date: string | null
+          faculty_id: string | null
+          feedback: string | null
           id: string
           proof_url: string
           reason: string
           status: string
+          student_id: string | null
+          subject_id: string | null
         }
         Insert: {
           attendance_id?: string | null
           created_at?: string | null
+          date?: string | null
+          faculty_id?: string | null
+          feedback?: string | null
           id?: string
           proof_url: string
           reason: string
           status?: string
+          student_id?: string | null
+          subject_id?: string | null
         }
         Update: {
           attendance_id?: string | null
           created_at?: string | null
+          date?: string | null
+          faculty_id?: string | null
+          feedback?: string | null
           id?: string
           proof_url?: string
           reason?: string
           status?: string
+          student_id?: string | null
+          subject_id?: string | null
         }
         Relationships: [
           {
@@ -82,6 +97,27 @@ export type Database = {
             columns: ["attendance_id"]
             isOneToOne: false
             referencedRelation: "attendance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_attendance_requests_faculty"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_attendance_requests_student"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_attendance_requests_subject"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
