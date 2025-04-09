@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Eye, CheckCircle, XCircle } from "lucide-react";
 import { AttendanceRequest } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -218,6 +219,7 @@ const AttendanceRequestsTable = () => {
                           ? "bg-green-100 text-green-800 hover:bg-green-100"
                           : request.status === "rejected"
                           ? "bg-red-100 text-red-800 hover:bg-red-100"
+                          : ""
                       }`}
                     >
                       {request.status === "pending"
@@ -307,6 +309,7 @@ const AttendanceRequestsTable = () => {
                       ? "bg-green-100 text-green-800"
                       : selectedRequest.status === "rejected"
                       ? "bg-red-100 text-red-800"
+                      : ""
                   }`}
                 >
                   {selectedRequest.status === "pending"
