@@ -7,7 +7,7 @@ import AttendanceCard from "@/components/student/AttendanceCard";
 import AttendanceCalendar from "@/components/student/AttendanceCalendar";
 import AbsenceRequestForm from "@/components/student/AbsenceRequestForm";
 import { AttendanceStats } from "@/types";
-import { ArrowUpRight, CalendarCheck, CalendarDays, CheckSquare, Clock, FileCheck, Users } from "lucide-react";
+import { ArrowUpRight, CalendarCheck, CalendarDays, CheckSquare, Clock, FileCheck } from "lucide-react";
 
 // Mock subjects data
 const mockSubjects = [
@@ -66,9 +66,10 @@ const StudentDashboard = () => {
       acc.absent += subject.stats.absent;
       return acc;
     },
-    { totalClasses: 0, present: 0, absent: 0 }
+    { totalClasses: 0, present: 0, absent: 0, percentage: 0 }
   );
   
+  // Calculate the percentage after all values are summed
   overallStats.percentage = Math.round(
     (overallStats.present / overallStats.totalClasses) * 100
   );

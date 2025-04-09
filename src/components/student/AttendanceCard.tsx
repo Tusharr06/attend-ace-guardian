@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { AttendanceStats } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface AttendanceCardProps {
   subject: string;
@@ -38,7 +39,8 @@ const AttendanceCard = ({ subject, stats }: AttendanceCardProps) => {
           <Progress 
             value={stats.percentage} 
             className="h-2"
-            indicatorClassName={getProgressColor(stats.percentage)}
+            // Use className with cn utility to combine the base class with the dynamic color
+            className={cn("h-2", getProgressColor(stats.percentage))}
           />
           <div className="grid grid-cols-3 text-sm mt-2">
             <div>

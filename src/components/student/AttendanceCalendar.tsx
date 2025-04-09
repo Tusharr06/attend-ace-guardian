@@ -27,9 +27,9 @@ const AttendanceCalendar = () => {
     return foundDay ? foundDay.status : null;
   };
 
-  // Custom renderer for the calendar days
-  const renderDay = (day: Date) => {
-    const status = isDayHighlighted(day);
+  // Custom renderer for the calendar days - fixed to use proper DayContent component props
+  const renderDay = (props: { date: Date; displayMonth?: Date }) => {
+    const status = isDayHighlighted(props.date);
     if (!status) return null;
 
     return (
@@ -38,7 +38,7 @@ const AttendanceCalendar = () => {
           status === "present" ? "bg-green-100" : "bg-red-100"
         }`}
       >
-        {day.getDate()}
+        {props.date.getDate()}
       </div>
     );
   };
@@ -70,7 +70,7 @@ const AttendanceCalendar = () => {
             onSelect={handleDateSelect}
             className="rounded-md border"
             components={{
-              Day: ({ day }) => renderDay(day),
+              DayContent: (props) => renderDay(props),
             }}
           />
           <div className="space-y-4">

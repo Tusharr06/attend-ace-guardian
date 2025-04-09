@@ -15,31 +15,35 @@ import AttendanceRequests from "./pages/AttendanceRequests";
 import ApprovalRequests from "./pages/ApprovalRequests";
 import ManageAttendance from "./pages/ManageAttendance";
 import NotFound from "./pages/NotFound";
+import React from "react"; // Add explicit React import
 
+// Create a new query client instance
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <MainNav />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/student-dashboard" element={<StudentDashboard />} />
-          <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
-          <Route path="/attendance-records" element={<AttendanceRecords />} />
-          <Route path="/attendance-requests" element={<AttendanceRequests />} />
-          <Route path="/approval-requests" element={<ApprovalRequests />} />
-          <Route path="/manage-attendance" element={<ManageAttendance />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <MainNav />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/student-dashboard" element={<StudentDashboard />} />
+            <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
+            <Route path="/attendance-records" element={<AttendanceRecords />} />
+            <Route path="/attendance-requests" element={<AttendanceRequests />} />
+            <Route path="/approval-requests" element={<ApprovalRequests />} />
+            <Route path="/manage-attendance" element={<ManageAttendance />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;
