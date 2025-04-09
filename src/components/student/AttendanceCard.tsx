@@ -38,8 +38,6 @@ const AttendanceCard = ({ subject, stats }: AttendanceCardProps) => {
           </div>
           <Progress 
             value={stats.percentage} 
-            className="h-2"
-            // Use className with cn utility to combine the base class with the dynamic color
             className={cn("h-2", getProgressColor(stats.percentage))}
           />
           <div className="grid grid-cols-3 text-sm mt-2">

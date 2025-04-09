@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { CalendarRange } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 // Mock attendance data
 const mockAttendanceData = [
@@ -163,8 +164,7 @@ const AttendanceRecords = () => {
                   </div>
                   <Progress 
                     value={stats.percentage} 
-                    className="h-2"
-                    indicatorClassName={getProgressColor(stats.percentage)}
+                    className={cn("h-2", getProgressColor(stats.percentage))}
                   />
                 </div>
                 
