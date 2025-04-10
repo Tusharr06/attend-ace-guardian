@@ -1,5 +1,6 @@
 
 import LoginForm from "@/components/auth/LoginForm";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Login = () => {
   return (
@@ -14,6 +15,18 @@ const Login = () => {
           </p>
         </div>
         <LoginForm />
+        
+        <Card className="mt-8">
+          <CardContent className="p-4 text-sm">
+            <h3 className="font-semibold mb-2">Available Faculty Accounts</h3>
+            <p className="text-muted-foreground mb-1">Use these credentials to login as faculty:</p>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>Prof. Johnson: <span className="font-medium">johnson@faculty.edu / password123</span></li>
+              <li>Prof. Williams: <span className="font-medium">williams@faculty.edu / password123</span></li>
+              <li>Prof. Davis: <span className="font-medium">davis@faculty.edu / password123</span></li>
+            </ul>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

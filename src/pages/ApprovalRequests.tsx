@@ -8,16 +8,12 @@ const ApprovalRequests = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Check if user is logged in as faculty or using demo faculty
+    // Check if user is logged in as faculty
     const userRole = localStorage.getItem("userRole");
-    const userEmail = localStorage.getItem("userEmail");
     
-    // Allow both real faculty users and demo faculty
-    const isDemoFaculty = userEmail === "demo.faculty@example.com";
-    
-    if (!userRole && !isDemoFaculty) {
+    if (!userRole) {
       navigate("/login");
-    } else if (userRole !== "faculty" && !isDemoFaculty) {
+    } else if (userRole !== "faculty") {
       navigate("/student-dashboard");
     }
     setLoading(false);

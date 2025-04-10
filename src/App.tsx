@@ -16,13 +16,70 @@ import ApprovalRequests from "./pages/ApprovalRequests";
 import ManageAttendance from "./pages/ManageAttendance";
 import FacultyDirectory from "./pages/FacultyDirectory";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Create a new query client instance inside the component to ensure it's created
 // within the React lifecycle
 const App = () => {
   // Create the query client within the component
   const [queryClient] = useState(() => new QueryClient());
+
+  // Setup demo faculty accounts if they don't exist
+  useEffect(() => {
+    // Pre-populate attendance requests for demo
+    const existingRequests = localStorage.getItem("attendanceRequests");
+    if (!existingRequests) {
+      // Create some demo requests
+      const demoRequests = [
+        {
+          id: "1",
+          studentId: "student1",
+          studentName: "John Doe",
+          subjectId: "CS101",
+          subjectName: "Web Development",
+          facultyId: "faculty1",
+          facultyName: "Prof. Johnson",
+          date: new Date(2025, 3, 8).toISOString(),
+          reason: "Medical appointment",
+          proofUrl: "medical_certificate.pdf",
+          status: "pending",
+          createdAt: new Date(2025, 3, 7).toISOString(),
+        },
+        {
+          id: "2",
+          studentId: "student2",
+          studentName: "Sarah Chen",
+          subjectId: "CS102",
+          subjectName: "Database Management",
+          facultyId: "faculty2",
+          facultyName: "Prof. Williams",
+          date: new Date(2025, 3, 10).toISOString(),
+          reason: "Family emergency",
+          proofUrl: "family_emergency.pdf",
+          status: "approved",
+          createdAt: new Date(2025, 3, 9).toISOString(),
+          feedback: "Approved based on documentation provided."
+        },
+        {
+          id: "3",
+          studentId: "student3",
+          studentName: "Michael Rodriguez",
+          subjectId: "CS103",
+          subjectName: "Data Structures",
+          facultyId: "faculty3",
+          facultyName: "Prof. Davis",
+          date: new Date(2025, 3, 12).toISOString(),
+          reason: "Technical issues during online class",
+          proofUrl: "error_screenshot.jpg",
+          status: "rejected",
+          createdAt: new Date(2025, 3, 11).toISOString(),
+          feedback: "Not a valid reason for absence according to department policy."
+        }
+      ];
+      
+      localStorage.setItem("attendanceRequests", JSON.stringify(demoRequests));
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
