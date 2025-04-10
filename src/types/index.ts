@@ -17,7 +17,9 @@ export interface AttendanceRequest {
   id: string;
   studentId: string;
   subjectId: string;
-  facultyId: string; // Added facultyId
+  subjectName?: string; // Added subjectName
+  facultyId: string;
+  facultyName?: string; // Added facultyName
   date: string;
   reason: string;
   proofUrl: string;

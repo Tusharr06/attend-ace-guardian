@@ -5,8 +5,17 @@ import { Avatar } from "@/components/ui/avatar";
 import { GraduationCap, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Faculty data type definition
+export interface Faculty {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  subjects: string[];
+}
+
 // Real faculty data that will be used across the application
-export const facultyData = [
+export const facultyData: Faculty[] = [
   { 
     id: "f001", 
     name: "Dr. Robert Smith", 
