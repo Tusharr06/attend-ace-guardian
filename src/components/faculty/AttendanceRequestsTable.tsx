@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,6 +8,7 @@ import { Eye, CheckCircle, XCircle } from "lucide-react";
 import { AttendanceRequest } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { facultyData } from "@/components/student/FacultyList";
 
 // Mock data for students
 const mockStudents = [
@@ -18,78 +18,76 @@ const mockStudents = [
   { id: "9", name: "Thomas Martinez", usn: "1XX22CS009" },
 ];
 
-// Mock data for subjects
-const mockSubjects = [
-  { id: "1", name: "Web Development" },
-  { id: "2", name: "Database Management" },
-  { id: "3", name: "Data Structures" },
-];
+// Use the faculty data from FacultyList component
+const mockFaculties = facultyData;
 
-// Mock data for faculties
-const mockFaculties = [
-  { id: "1", name: "Dr. Robert Smith" },
-  { id: "2", name: "Prof. Jennifer Lee" },
-  { id: "3", name: "Dr. Michael Johnson" },
-  { id: "4", name: "Prof. Elizabeth Taylor" },
-];
+// Create subjects based on faculty data
+const mockSubjects = facultyData.flatMap(faculty => 
+  faculty.subjects.map((name, index) => ({
+    id: `${faculty.id}-${index}`,
+    name,
+  }))
+);
 
 const AttendanceRequestsTable = () => {
   const [selectedRequest, setSelectedRequest] = useState<AttendanceRequest | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [requests, setRequests] = useState<AttendanceRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch attendance requests
-  const { data: requests = [], isLoading } = useQuery({
-    queryKey: ['attendance-requests'],
-    queryFn: async () => {
-      // This is a placeholder for the actual Supabase query
-      const { data, error } = await supabase
-        .from('attendance_requests')
-        .select('*');
+  // Load attendance requests from localStorage for demo
+  useEffect(() => {
+    // Check which faculty is logged in
+    const userEmail = localStorage.getItem("userEmail");
+    const isDemoFaculty = userEmail === "demo.faculty@example.com";
+    
+    setLoading(true);
+    
+    try {
+      // Get stored requests
+      const storedRequests = JSON.parse(localStorage.getItem("attendanceRequests") || "[]");
       
-      if (error) {
-        throw new Error(error.message);
+      if (isDemoFaculty) {
+        // Show all requests for demo faculty
+        setRequests(storedRequests);
+      } else {
+        // For a real faculty account, only show requests assigned to them
+        // This is placeholder logic - in a real app, you'd filter by the logged-in faculty's ID
+        setRequests(storedRequests);
       }
-      
-      // Convert from Supabase format to our application format
-      return (data || []).map(item => ({
-        id: item.id,
-        studentId: item.student_id || '',
-        subjectId: item.subject_id || '',
-        facultyId: item.faculty_id || '',
-        date: item.date || '',
-        reason: item.reason,
-        proofUrl: item.proof_url,
-        status: item.status as "pending" | "approved" | "rejected",
-        createdAt: item.created_at || new Date().toISOString(),
-        feedback: item.feedback,
-      }));
-    },
-  });
+    } catch (error) {
+      console.error("Error loading attendance requests:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // Update request status mutation
-  const updateRequestStatus = useMutation({
-    mutationFn: async ({ requestId, status, feedback }: { requestId: string, status: "approved" | "rejected", feedback?: string }) => {
-      const { error } = await supabase
-        .from('attendance_requests')
-        .update({ 
-          status, 
-          feedback 
-        })
-        .eq('id', requestId);
+  // Update request status
+  const handleUpdateRequestStatus = async (requestId: string, status: "approved" | "rejected", feedback?: string) => {
+    try {
+      // Get current requests from localStorage
+      const currentRequests = JSON.parse(localStorage.getItem("attendanceRequests") || "[]");
       
-      if (error) {
-        throw new Error(error.message);
-      }
+      // Update the specific request
+      const updatedRequests = currentRequests.map((req: any) => 
+        req.id === requestId ? { ...req, status, feedback: feedback || req.feedback } : req
+      );
+      
+      // Save back to localStorage
+      localStorage.setItem("attendanceRequests", JSON.stringify(updatedRequests));
+      
+      // Update local state
+      setRequests(updatedRequests);
       
       return { requestId, status };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance-requests'] });
-    },
-  });
+    } catch (error) {
+      console.error("Error updating request:", error);
+      throw error;
+    }
+  };
 
   const getStudentName = (studentId: string) => {
     const student = mockStudents.find((s) => s.id === studentId);
@@ -118,10 +116,7 @@ const AttendanceRequestsTable = () => {
 
   const handleApproveRequest = async (requestId: string) => {
     try {
-      await updateRequestStatus.mutateAsync({
-        requestId,
-        status: "approved"
-      });
+      await handleUpdateRequestStatus(requestId, "approved");
       
       setIsDialogOpen(false);
       
@@ -141,10 +136,7 @@ const AttendanceRequestsTable = () => {
 
   const handleRejectRequest = async (requestId: string) => {
     try {
-      await updateRequestStatus.mutateAsync({
-        requestId,
-        status: "rejected"
-      });
+      await handleUpdateRequestStatus(requestId, "rejected");
       
       setIsDialogOpen(false);
       
@@ -157,8 +149,7 @@ const AttendanceRequestsTable = () => {
       toast({
         title: "Action failed",
         description: "There was an error rejecting the request. Please try again.",
-        variant: "destructive",
-      });
+        variant: "destructive",      });
     }
   };
 
@@ -170,7 +161,7 @@ const AttendanceRequestsTable = () => {
     });
   };
 
-  if (isLoading) {
+  if (loading) {
     return <div className="p-8 text-center">Loading attendance requests...</div>;
   }
 
@@ -207,7 +198,7 @@ const AttendanceRequestsTable = () => {
                     {getStudentUSN(request.studentId)}
                   </div>
                   <div className="col-span-3 md:col-span-2">
-                    {getSubjectName(request.subjectId)}
+                    {request.subjectName || getSubjectName(request.subjectId)}
                   </div>
                   <div className="col-span-2 md:col-span-2">
                     <Badge
@@ -278,11 +269,11 @@ const AttendanceRequestsTable = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Subject</p>
-                  <p className="text-sm">{getSubjectName(selectedRequest.subjectId)}</p>
+                  <p className="text-sm">{selectedRequest.subjectName || getSubjectName(selectedRequest.subjectId)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Faculty</p>
-                  <p className="text-sm">{getFacultyName(selectedRequest.facultyId)}</p>
+                  <p className="text-sm">{selectedRequest.facultyName || getFacultyName(selectedRequest.facultyId)}</p>
                 </div>
               </div>
               

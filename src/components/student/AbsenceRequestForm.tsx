@@ -12,22 +12,19 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, Upload } from "lucide-react";
+import { facultyData } from "./FacultyList";
 
-// Mock subjects data - in a real app this would come from a database
-const mockSubjects = [
-  { id: "1", name: "Web Development", facultyId: "1" },
-  { id: "2", name: "Database Management", facultyId: "1" },
-  { id: "3", name: "Data Structures", facultyId: "2" },
-  { id: "4", name: "Computer Networks", facultyId: "2" },
-];
+// Use the actual faculty data imported from FacultyList
+const mockFaculties = facultyData;
 
-// Mock faculty data
-const mockFaculties = [
-  { id: "1", name: "Dr. Robert Smith" },
-  { id: "2", name: "Prof. Jennifer Lee" },
-  { id: "3", name: "Dr. Michael Johnson" },
-  { id: "4", name: "Prof. Elizabeth Taylor" },
-];
+// Create subjects based on faculty data
+const mockSubjects = facultyData.flatMap(faculty => 
+  faculty.subjects.map((name, index) => ({
+    id: `${faculty.id}-${index}`,
+    name,
+    facultyId: faculty.id
+  }))
+);
 
 const AbsenceRequestForm = () => {
   const [subject, setSubject] = useState("");
@@ -68,21 +65,37 @@ const AbsenceRequestForm = () => {
     
     setIsLoading(true);
     
-    // This is a placeholder for Supabase integration
-    // In a real implementation, this would upload the file to Supabase storage
-    // and create a record in the database
     try {
+      // Get selected subject and faculty details
+      const selectedSubject = mockSubjects.find(s => s.id === subject);
+      const selectedFaculty = mockFaculties.find(f => f.id === faculty);
+      
+      // Create a request object
+      const request = {
+        id: crypto.randomUUID(),
+        studentId: "1", // In a real app, this would be the current user's ID
+        subjectId: subject,
+        subjectName: selectedSubject?.name || "Unknown",
+        facultyId: faculty,
+        facultyName: selectedFaculty?.name || "Unknown",
+        date: date?.toISOString() || new Date().toISOString(),
+        reason,
+        proofUrl: file.name, // In a real app, this would be a URL to the uploaded file
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+      
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Get faculty name for the toast message
-      const facultyName = mockFaculties.find(f => f.id === faculty)?.name || "Unknown faculty";
-      const subjectName = mockSubjects.find(s => s.id === subject)?.name || "Unknown subject";
+      // Store the request in localStorage for demo purposes
+      const existingRequests = JSON.parse(localStorage.getItem("attendanceRequests") || "[]");
+      localStorage.setItem("attendanceRequests", JSON.stringify([...existingRequests, request]));
       
       setIsLoading(false);
       toast({
         title: "Request submitted",
-        description: `Your absence request for ${subjectName} has been submitted to ${facultyName}.`,
+        description: `Your absence request for ${selectedSubject?.name} has been submitted to ${selectedFaculty?.name}.`,
       });
       
       // Reset form

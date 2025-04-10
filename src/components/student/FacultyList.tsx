@@ -3,32 +3,33 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { GraduationCap, Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock faculty data for now - would come from database in real implementation
-const mockFaculties = [
+// Real faculty data that will be used across the application
+export const facultyData = [
   { 
-    id: "1", 
+    id: "f001", 
     name: "Dr. Robert Smith", 
     email: "robert.smith@university.edu", 
     department: "Computer Science",
     subjects: ["Web Development", "Database Management"]
   },
   { 
-    id: "2", 
+    id: "f002", 
     name: "Prof. Jennifer Lee", 
     email: "jennifer.lee@university.edu", 
     department: "Computer Science",
     subjects: ["Data Structures", "Computer Networks"]
   },
   { 
-    id: "3", 
+    id: "f003", 
     name: "Dr. Michael Johnson", 
     email: "michael.johnson@university.edu", 
     department: "Mathematics",
     subjects: ["Discrete Mathematics", "Algorithms"]
   },
   { 
-    id: "4", 
+    id: "f004", 
     name: "Prof. Elizabeth Taylor", 
     email: "elizabeth.taylor@university.edu", 
     department: "Computer Science",
@@ -37,7 +38,7 @@ const mockFaculties = [
 ];
 
 const FacultyList = () => {
-  const [faculties, setFaculties] = useState(mockFaculties);
+  const [faculties, setFaculties] = useState(facultyData);
   const [loading, setLoading] = useState(false);
 
   // In a real implementation, this would fetch data from Supabase
@@ -47,7 +48,17 @@ const FacultyList = () => {
         setLoading(true);
         // Placeholder for API call
         await new Promise(resolve => setTimeout(resolve, 500));
-        setFaculties(mockFaculties);
+        
+        // Initialize faculty accounts in Supabase if using demo mode
+        const userEmail = localStorage.getItem("userEmail");
+        const isDemoMode = userEmail === "demo.faculty@example.com";
+        
+        if (isDemoMode) {
+          // Create faculty accounts in localStorage for demo
+          localStorage.setItem("facultyAccounts", JSON.stringify(facultyData));
+        }
+        
+        setFaculties(facultyData);
       } catch (error) {
         console.error("Error fetching faculty data:", error);
       } finally {
