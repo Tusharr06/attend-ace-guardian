@@ -9,7 +9,11 @@ import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
-const LoginForm = () => {
+interface LoginFormProps {
+  userRole: UserRole;
+}
+
+const LoginForm = ({ userRole }: LoginFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -43,9 +47,15 @@ const LoginForm = () => {
           throw userError;
         }
         
+        const fetchedRole = userData?.role as UserRole;
+        
+        // Check if the user's role matches the selected login type
+        if (fetchedRole !== userRole) {
+          throw new Error(`This account doesn't have ${userRole} permissions. Please use the correct login tab.`);
+        }
+        
         // Store role in localStorage
-        const userRole = userData?.role as UserRole;
-        localStorage.setItem("userRole", userRole);
+        localStorage.setItem("userRole", fetchedRole);
         localStorage.setItem("userEmail", email);
         
         toast({
@@ -54,7 +64,7 @@ const LoginForm = () => {
         });
         
         // Redirect based on role
-        if (userRole === "faculty") {
+        if (fetchedRole === "faculty") {
           navigate("/faculty-dashboard");
         } else {
           navigate("/student-dashboard");
@@ -74,7 +84,7 @@ const LoginForm = () => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Login</CardTitle>
+        <CardTitle className="text-2xl font-bold">Login as {userRole}</CardTitle>
         <CardDescription>
           Enter your email and password to access your account
         </CardDescription>

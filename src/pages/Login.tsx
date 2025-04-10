@@ -3,9 +3,10 @@ import LoginForm from "@/components/auth/LoginForm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { UserRole } from "@/types";
 
 const Login = () => {
-  const [loginType, setLoginType] = useState<"student" | "faculty">("student");
+  const [loginType, setLoginType] = useState<UserRole>("student");
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
@@ -21,7 +22,7 @@ const Login = () => {
 
         <Tabs 
           value={loginType} 
-          onValueChange={(value) => setLoginType(value as "student" | "faculty")}
+          onValueChange={(value) => setLoginType(value as UserRole)}
           className="w-full"
         >
           <TabsList className="grid w-full grid-cols-2">
@@ -29,10 +30,10 @@ const Login = () => {
             <TabsTrigger value="faculty">Faculty Login</TabsTrigger>
           </TabsList>
           <TabsContent value="student">
-            <LoginForm role="student" />
+            <LoginForm userRole="student" />
           </TabsContent>
           <TabsContent value="faculty">
-            <LoginForm role="faculty" />
+            <LoginForm userRole="faculty" />
           </TabsContent>
         </Tabs>
         
